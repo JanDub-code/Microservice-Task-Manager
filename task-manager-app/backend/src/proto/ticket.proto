@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ticket;
+
+message Departure {
+  string airport = 1;
+  string city = 2;
+  string time = 3;
+}
+
+message TicketData {
+  string userId = 1;
+  string flightId = 2;
+  string seatNumber = 3;
+  Departure departure = 4;
+}
+
+service TicketService {
+  rpc PrintTicket (TicketData) returns (Response);
+}
+
+message Response {
+  bool success = 1;
+  string message = 2;
+}

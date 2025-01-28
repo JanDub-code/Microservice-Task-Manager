@@ -1,0 +1,19 @@
+# ==== Keycloak OAuth Demo ====
+
+# --- Authorization Code Grant ---
+
+# 1. Redirect user to login page (open in browser, not here headless)
+# http://localhost:8091/realms/FLIGHTS-APP/protocol/openid-connect/auth?response_type=code&client_id=web-app&redirect_uri=http://localhost:5173/login-callback
+
+# 2. User logs in by providing username and password directly to Keycloak
+
+# 3. Keycloak redirects user back to client's URL with authorization code in URL
+
+# 4. Client sends POST request to Keycloak to exchange authorization code for access token
+POST http://localhost:8091/realms/FLIGHTS-APP/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code &
+client_id=web-app &
+redirect_uri=http://localhost:5173/login-callback &
+code=ef5fcaab-df74-4c55-9a63-778cd1c1d8af.297e2183-3935-418b-a03f-c8be39f0f37a.8b2c3836-ba16-4e25-836f-bbb377d608cb

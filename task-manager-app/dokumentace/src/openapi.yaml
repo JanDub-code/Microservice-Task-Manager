@@ -1,0 +1,621 @@
+openapi: 3.0.0
+info:
+  title: Teams, Tasks & Notifications API
+  version: 1.0.0
+  description: Swagger dokumentace pro Teams, Task a Notification API
+
+servers:
+  - url: http://localhost:5001
+    description: Server pro Teams a Tasks
+  - url: http://localhost:5003
+    description: Server pro Notifications
+
+tags:
+  - name: Teams
+    description: Operace týkající se týmů
+  - name: Tasks
+    description: Operace týkající se úkolů
+  - name: Notifications
+    description: Operace týkající se notifikací
+
+paths:
+  ################################################
+  ##                 TEAMS PATHS                ##
+  ################################################
+  /teams:
+    get:
+      tags:
+        - Teams
+      summary: Získat všechny týmy
+      responses:
+        '200':
+          description: Seznam týmů
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+
+  /teams/{id}:
+    get:
+      tags:
+        - Teams
+      summary: Získat tým podle ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID týmu
+      responses:
+        '200':
+          description: Detail týmu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '404':
+          description: Tým nenalezen
+    put:
+      tags:
+        - Teams
+      summary: Aktualizovat tým
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID týmu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamDto'
+      responses:
+        '202':
+          description: Tým aktualizován
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '404':
+          description: Tým nenalezen
+    delete:
+      tags:
+        - Teams
+      summary: Smazat tým
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID týmu
+      responses:
+        '204':
+          description: Tým smazán
+
+  /createteam:
+    post:
+      tags:
+        - Teams
+      summary: Vytvořit nový tým
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamDto'
+      responses:
+        '201':
+          description: Tým vytvořen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Chyba při vytváření týmu
+
+  /jointeam:
+    post:
+      tags:
+        - Teams
+      summary: Připojit se k týmu pomocí join kódu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                joinCode:
+                  type: string
+                member:
+                  $ref: '#/components/schemas/Member'
+              required:
+                - joinCode
+                - member
+      responses:
+        '200':
+          description: Připojení k týmu úspěšné
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Neplatná data
+        '404':
+          description: Tým nenalezen nebo neplatný joinCode
+
+  /deleteUserFromTeam:
+    delete:
+      tags:
+        - Teams
+      summary: Odstranit člena z týmu
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teamName:
+                  type: string
+                userId:
+                  type: string
+              required:
+                - teamName
+                - userId
+      responses:
+        '200':
+          description: Člen odstraněn z týmu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Chyba při odstraňování člena
+
+  /changeRoleInTeam:
+    patch:
+      tags:
+        - Teams
+      summary: Změnit roli člena v týmu
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teamName:
+                  type: string
+                userId:
+                  type: string
+                newRole:
+                  type: string
+              required:
+                - teamName
+                - userId
+                - newRole
+      responses:
+        '200':
+          description: Role člena změněna
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Chyba při změně role
+
+  /deleteTeam:
+    delete:
+      tags:
+        - Teams
+      summary: Smazat tým podle názvu
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teamName:
+                  type: string
+              required:
+                - teamName
+      responses:
+        '200':
+          description: Tým smazán
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Chyba při mazání týmu
+
+  ################################################
+  ##                 TASKS PATHS                ##
+  ################################################
+  /tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Získat všechny úkoly nebo úkoly podle ID týmu
+      parameters:
+        - in: query
+          name: teamId
+          schema:
+            type: string
+          required: false
+          description: ID týmu pro filtrování úkolů
+      responses:
+        '200':
+          description: Seznam úkolů
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+  /tasks/{id}:
+    get:
+      tags:
+        - Tasks
+      summary: Získat úkol podle ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID úkolu
+      responses:
+        '200':
+          description: Detail úkolu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Úkol nenalezen
+    put:
+      tags:
+        - Tasks
+      summary: Aktualizovat úkol
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID úkolu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskDto'
+      responses:
+        '200':
+          description: Úkol aktualizován
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Úkol nenalezen
+    delete:
+      tags:
+        - Tasks
+      summary: Smazat úkol
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID úkolu
+      responses:
+        '204':
+          description: Úkol smazán
+
+  /tasks/{id}/comments:
+    post:
+      tags:
+        - Tasks
+      summary: Přidat komentář k úkolu
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID úkolu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                content:
+                  type: string
+              required:
+                - userId
+                - content
+      responses:
+        '201':
+          description: Komentář přidán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Neplatná data
+    patch:
+      tags:
+        - Tasks
+      summary: Aktualizovat status úkolu
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID úkolu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Pending, In Progress, Completed]
+              required:
+                - status
+      responses:
+        '200':
+          description: Status úkolu aktualizován
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Neplatný status
+        '404':
+          description: Úkol nenalezen
+
+  ################################################
+  ##           NOTIFICATIONS PATHS             ##
+  ################################################
+  /notifications:
+    post:
+      tags:
+        - Notifications
+      summary: Vytvořit novou notifikaci
+      description: Vytvoří novou notifikaci pro daný tým a uživatele
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationDto'
+      responses:
+        '201':
+          description: Notifikace vytvořena
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Neplatná data
+
+  /teams/{teamId}/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Získat notifikace podle teamId
+      parameters:
+        - in: path
+          name: teamId
+          schema:
+            type: string
+          required: true
+          description: ID týmu
+      responses:
+        '200':
+          description: Seznam notifikací pro daný tým
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+  /users/{userId}/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Získat notifikace podle userId
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID uživatele
+      responses:
+        '200':
+          description: Seznam notifikací pro daného uživatele
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ################################################
+    ##                  TEAMS                    ##
+    ################################################
+    Team:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        joinCode:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+      required:
+        - _id
+        - name
+        - joinCode
+        - members
+
+    TeamDto:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+
+    Member:
+      type: object
+      properties:
+        userId:
+          type: string
+        role:
+          type: string
+        username:
+          type: string
+      required:
+        - userId
+        - role
+        - username
+
+    ################################################
+    ##                  TASKS                    ##
+    ################################################
+    Task:
+      type: object
+      properties:
+        _id:
+          type: string
+        teamId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+            - Pending
+            - In Progress
+            - Completed
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+      required:
+        - _id
+        - teamId
+        - title
+        - status
+        - comments
+
+    TaskDto:
+      type: object
+      properties:
+        teamId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - teamId
+        - title
+
+    Comment:
+      type: object
+      properties:
+        userId:
+          type: string
+        content:
+          type: string
+      required:
+        - userId
+        - content
+
+    ################################################
+    ##             NOTIFICATIONS                ##
+    ################################################
+    Notification:
+      type: object
+      properties:
+        _id:
+          type: string
+        teamId:
+          type: string
+        userId:
+          type: string
+        text:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - teamId
+        - userId
+        - text
+        - timestamp
+
+    NotificationDto:
+      type: object
+      properties:
+        teamId:
+          type: string
+        userId:
+          type: string
+        text:
+          type: string
+      required:
+        - teamId
+        - userId
+        - text

@@ -1,0 +1,8 @@
+### Create a flight reservation
+POST http://localhost:5003/aircrafts/a00000000000000000000001/status
+Content-Type: application/json
+
+{
+  "latitude": 45.7749,
+  "longitude": -122.4194
+}

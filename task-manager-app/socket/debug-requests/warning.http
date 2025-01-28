@@ -1,0 +1,7 @@
+### Create a flight reservation
+POST http://localhost:3003/warnings
+Content-Type: application/json
+
+{
+  "message": "All flights are delayed due to a hurricane!"
+}

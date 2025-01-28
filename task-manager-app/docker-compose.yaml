@@ -1,0 +1,104 @@
+#version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - flight-control-mongo:/data/db
+    networks:
+      - mongo-net
+
+  backend:
+    build:
+      context: backend
+    ports:
+      - "5001:3000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/flight_control
+      - CORS_ORIGIN=http://localhost:5002
+      - TICKET_SERVICE_URL=ticket_service:50051
+      - KEYCLOAK_BASE_URL=http://keycloak:8080
+      - KEYCLOAK_ISSUER_URL=http://localhost:8091
+      - KEYCLOAK_REALM=FLIGHTS-APP
+      - KEYCLOAK_CLIENT_ID=web-app
+    networks:
+      - mongo-net
+      - keycloak-net
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: frontend
+      args:
+        VITE_BACKEND_URL: http://localhost:5001
+        VITE_STATUS_BACKEND_URL: http://localhost:5003
+        VITE_KEYCLOAK_BASE_URL: http://localhost:8091
+        VITE_KEYCLOAK_REALM: FLIGHTS-APP
+        VITE_KEYCLOAK_CLIENT_ID: web-app
+    ports:
+      - "5002:4173"
+
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=keycloakpassword
+      - POSTGRES_DB=keycloak
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - postgres-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=1234
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=postgres
+      - KC_DB_URL_PORT=5432
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=keycloakpassword
+    ports:
+      - "8091:8080"
+    command: start-dev
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+    networks:
+      - keycloak-net
+      - postgres-net
+    depends_on:
+      - postgres
+
+  socket:
+    build:
+      context: socket
+    ports:
+      - "5003:3003"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/flight_status
+      - CORS_ORIGIN=http://localhost:5002
+    networks:
+      - mongo-net
+    depends_on:
+      - mongo
+
+  dokumentace:
+    build:
+      context: dokumentace
+    ports:
+      - "5005:3005"
+
+volumes:
+  flight-control-mongo:
+  keycloak-data:
+  postgres-data:
+
+networks:
+  mongo-net:
+  keycloak-net:
+  postgres-net:
