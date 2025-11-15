@@ -36,7 +36,7 @@ export const teamService = {
 
     async joinTeam(joinCode: string, member: { userId: string; role: string; username: string }) {
         // Najdi tým podle joinCode
-        const team = await Team.findOne({ joinCode });
+        const team = await Team.findOne({ joinCode: { $eq: joinCode } });
 
         if (!team) {
             return null; // Tým nenalezen
