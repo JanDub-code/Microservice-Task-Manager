@@ -56,7 +56,7 @@ export const teamService = {
     },
 
     async removeMember(teamName: string, userId: string) {
-        const team = await Team.findOne({ name: teamName });
+        const team = await Team.findOne({ name: { $eq: teamName } });
 
         if (!team) {
             throw new Error("Team not found");
@@ -75,7 +75,7 @@ export const teamService = {
     },
 
     async changeRole(teamName: string, userId: string, newRole: string) {
-        const team = await Team.findOne({ name: teamName });
+        const team = await Team.findOne({ name: { $eq: teamName } });
 
         if (!team) {
             throw new Error("Team not found");
@@ -95,14 +95,14 @@ export const teamService = {
     },
 
     async deleteTeam(teamName: string) {
-        const team = await Team.findOne({ name: teamName });
+        const team = await Team.findOne({ name: { $eq: teamName } });
 
         if (!team) {
             throw new Error("Team not found");
         }
 
         // Smazání týmu z databáze
-        await Team.deleteOne({ name: teamName });
+        await Team.deleteOne({ name: { $eq: teamName } });
 
         return { message: `Team ${teamName} has been deleted successfully.` };
     },
