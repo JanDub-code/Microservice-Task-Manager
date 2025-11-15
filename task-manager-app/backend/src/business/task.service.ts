@@ -41,7 +41,7 @@ export const taskService = {
     },
 
     async updateStatus(id: string, status: string) {
-        return Task.findByIdAndUpdate(id, { status }, { new: true });
+        return Task.findByIdAndUpdate(id, { $set: { status } }, { new: true });
     },
 
 };
