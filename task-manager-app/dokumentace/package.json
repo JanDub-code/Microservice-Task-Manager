@@ -9,7 +9,7 @@
     "dev": "ts-node-dev src/server.ts"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^4.22.1",
     "swagger-ui-express": "^4.6.2",
     "yamljs": "^0.3.0"
   },
