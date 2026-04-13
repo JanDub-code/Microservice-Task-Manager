@@ -14,14 +14,14 @@
     "@grpc/proto-loader": "^0.7.13",
     "@node-oauth/express-oauth-server": "^4.1.1",
     "@types/express": "^5.0.0",
-    "axios": "^1.7.9",
+    "axios": "^1.15.0",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^5.0.1",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "jwks-rsa": "^3.1.0",
     "mongoose": "^8.7.0",
     "reflect-metadata": "^0.2.2",
@@ -31,6 +31,13 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/node": "^22.7.4"
+    "@types/node": "^22.7.4",
+    "vite": "^7.3.2"
+  },
+  "overrides": {
+    "path-to-regexp": "8.4.2",
+    "picomatch": "4.0.4",
+    "qs": "6.15.1",
+    "rollup": "4.60.1"
   }
 }
